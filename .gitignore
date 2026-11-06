@@ -6,3 +6,6 @@ dist/
 coverage/
 *.log
 *.tsbuildinfo
+
+# CI workflows kept locally only (GitHub token lacks workflow scope)
+.github/
