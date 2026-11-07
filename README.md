@@ -20,7 +20,7 @@ React 19 + TypeScript + Vite admin application. This revision expands the origin
 
 ## Source organization
 
-`src/App.tsx` exports the product root in `src/product/WorkspaceApp.tsx`. Pages and the email designer are lazy-loaded. `src/product/session.tsx` owns authenticated requests, resource loading, invalidation, notifications, downloads, and hash routing. `ui.tsx` holds shared form/dialog/table primitives. The original prototype remains unchanged at `/prototype.html`; its style tokens live in `styles/reference.css`, with product layout rules in `styles/product.css`.
+`src/App.tsx` exports the product root in `src/product/WorkspaceApp.tsx`. Pages and the email designer are lazy-loaded. `src/product/session.tsx` owns authenticated requests, resource loading, invalidation, notifications, downloads, and hash routing. `ui.tsx` holds shared form/dialog/table primitives. The original prototype remains unchanged at `reference/prototype.html` (outside `public/`, never built or served); its style tokens live in `styles/reference.css`, with product layout rules in `styles/product.css`.
 
 The modern product API is `/api/v1/manage/*`. Admin access supports account sign-in with an HTTP-only cookie, session restoration, CSRF-protected writes and sign-out. A workspace-key tab remains for bootstrap/recovery; that key is held only in sessionStorage, never embedded in the bundle. Transactional integration keys are separate, hashed server-side, and cannot access admin routes.
 
