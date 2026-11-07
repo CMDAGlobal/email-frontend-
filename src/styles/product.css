@@ -42,3 +42,17 @@ body{font-size:14px}button,a,input,select,textarea{-webkit-tap-highlight-color:t
 .footnote{display:flex;align-items:center;gap:7px;margin-top:2px;font-size:11px;color:var(--mute)}
 .footnote>svg{flex:none}
 @media(max-width:1050px){.dashboard-bottom .activity-feed{gap:14px 25px}.dashboard-bottom .activity-feed li{border-top:0;padding-top:0}}
+
+/* Dashboard polish: linked KPI cards with hover affordance */
+a.metric{color:inherit;text-decoration:none;cursor:pointer;transition:background .15s ease}
+a.metric:hover{background:var(--surface2)}
+a.metric:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+
+/* Delivery health: aligned grid replaces the fragile float layout at narrow widths */
+@media(max-width:1050px){
+ .delivery-health{display:grid;grid-template-columns:182px minmax(0,1fr);gap:0 18px;align-items:center}
+ .delivery-health>.section-heading{grid-column:1/-1}
+ .health-ring{float:none;padding:0}
+ .health-rows{margin-left:0}
+ .delivery-health>.text-link{margin:14px 0 0;grid-column:1/-1;justify-self:start}
+}
