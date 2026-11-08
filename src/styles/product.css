@@ -60,3 +60,10 @@ a.metric:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 /* Reports: provider breakdown + best-times heatmap + export */
 .reports-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}.heatmap{display:grid;gap:6px;padding:4px 22px 18px}.heatmap-row{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px}.heatmap-row>span{font-size:10px;color:var(--mute)}.heatmap-cells{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}.heatmap-cells i{display:block;aspect-ratio:1.7;border-radius:3px;background:var(--surface2)}.provider-rows{display:flex;flex-direction:column;padding:4px 22px 18px}.provider-row{padding:9px 0;border-top:1px solid var(--line2)}.provider-row:first-child{border-top:0}.provider-row b{font-size:13px}.provider-row small{display:block;font-size:11px;color:var(--mute);margin-bottom:6px}.provider-bar{height:4px;border-radius:2px;background:var(--blue);opacity:.8}
 @media (max-width:1050px){.reports-secondary{grid-template-columns:1fr}}
+/* Four-up stats strips: transactional overview + automation editor */
+.metrics-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1250px){.metrics-grid.four{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:650px){.metrics-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}.metrics-grid.four .metric:nth-child(4){border-bottom:0}.metrics-grid.four .metric:last-child{grid-column:auto}}
+/* Workflow branch tone (Yes green / No red) */
+.branch-labels span:first-child{color:var(--green);font-weight:600}
+.branch-labels span:last-child{color:var(--red);font-weight:600}
