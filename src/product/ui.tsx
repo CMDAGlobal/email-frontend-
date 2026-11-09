@@ -1,4 +1,4 @@
-import { useEffect,useRef,useState,type ButtonHTMLAttributes,type ReactNode,type FormEvent,type InputHTMLAttributes,type SelectHTMLAttributes,type TextareaHTMLAttributes } from 'react';
+import { useEffect,useId,useRef,useState,type ButtonHTMLAttributes,type ReactNode,type FormEvent,type InputHTMLAttributes,type SelectHTMLAttributes,type TextareaHTMLAttributes } from 'react';
 import { ArrowRight,Check,ChevronLeft,ChevronRight,Inbox,Loader2,Plus,RefreshCw,Search,X } from 'lucide-react';
 import { useOptionalSession } from './session';
 export function Button({children,primary=false,danger=false,small=false,allowReadOnly=false,icon:Icon,...props}:ButtonHTMLAttributes<HTMLButtonElement>&{primary?:boolean;danger?:boolean;small?:boolean;allowReadOnly?:boolean;icon?:typeof Plus}){const actor=useOptionalSession()?.actor;const denied=(primary||danger)&&actor?.role==='analyst'&&!allowReadOnly;return <button type="button" {...props} disabled={props.disabled||denied} title={denied?'Your account has read-only access':props.title} className={`btn ${primary?'primary':''} ${danger?'danger':''} ${small?'sm':''} ${props.className??''}`}>{Icon?<Icon size={16}/>:null}{children}</button>;}
@@ -14,14 +14,37 @@ export function ErrorState({message,retry}:{message:string;retry:()=>void}){retu
 export function Resource({loading,error,retry,children}:{loading:boolean;error:string;retry:()=>void;children:ReactNode}){return error?<ErrorState message={error} retry={retry}/>:loading?<Loading/>:<>{children}</>;}
 export function Modal({title,description,children,onClose,wide=false,drawer=false}:{title:string;description?:string;children:ReactNode;onClose:()=>void;wide?:boolean;drawer?:boolean}){
  const ref=useRef<HTMLDialogElement>(null);const close=useRef(onClose);close.current=onClose;
+ const titleId=useId(),descriptionId=useId();
  useEffect(()=>{const previous=document.activeElement as HTMLElement|null;const dialog=ref.current;dialog?.showModal();const handler=(e:Event)=>{e.preventDefault();close.current();};dialog?.addEventListener('cancel',handler);return()=>{dialog?.removeEventListener('cancel',handler);dialog?.close();previous?.focus();};},[]);
- return <dialog ref={ref} className={`product-modal ${wide?'wide':''} ${drawer?'sheet':''}`} onClick={e=>{if(e.target===ref.current)onClose();}}><div className="modal-heading"><div><h2>{title}</h2>{description?<p>{description}</p>:null}</div><button className="iconbtn" type="button" aria-label="Close dialog" onClick={onClose}><X size={18}/></button></div><div className="modal-body">{children}</div></dialog>;
+ return <dialog ref={ref} aria-labelledby={titleId} aria-describedby={description?descriptionId:undefined} className={`product-modal ${wide?'wide':''} ${drawer?'sheet':''}`} onClick={e=>{
+  if(e.target!==e.currentTarget)return;
+  const {left,right,top,bottom}=e.currentTarget.getBoundingClientRect();
+  if(e.clientX<left||e.clientX>right||e.clientY<top||e.clientY>bottom)onClose();
+ }}><div className="modal-heading"><div><h2 id={titleId}>{title}</h2>{description?<p id={descriptionId}>{description}</p>:null}</div><button className="iconbtn" type="button" aria-label="Close dialog" onClick={onClose}><X size={18}/></button></div><div className="modal-body">{children}</div></dialog>;
 }
 export function Confirm({title,description,onConfirm,onClose,danger=false,busy=false}:{title:string;description:string;onConfirm:()=>void;onClose:()=>void;danger?:boolean;busy?:boolean}){return <Modal title={title} onClose={onClose}><p className="confirm-description">{description}</p><div className="form-actions"><Button disabled={busy} onClick={onClose}>Cancel</Button><Button primary={!danger} danger={danger} disabled={busy} onClick={onConfirm}>{busy?'Working…':'Confirm'}</Button></div></Modal>;}
 export function SaveForm({children,onSubmit,label='Save changes',onCancel,allowReadOnly=false,disabled=false}:{children:ReactNode;onSubmit:()=>Promise<unknown>;label?:string;onCancel?:()=>void;allowReadOnly?:boolean;disabled?:boolean}){const [busy,setBusy]=useState(false);const [error,setError]=useState('');const actor=useOptionalSession()?.actor;async function submit(e:FormEvent){e.preventDefault();if(disabled||(actor?.role==='analyst'&&!allowReadOnly)){setError('Your account has read-only access');return;}setBusy(true);setError('');try{await onSubmit();}catch(e){setError(e instanceof Error?e.message:'Unable to save');}finally{setBusy(false);}}return <form onSubmit={submit}>{children}{error?<p role="alert" className="inline-error">{error}</p>:null}<div className="form-actions">{onCancel?<Button onClick={onCancel} disabled={busy}>Cancel</Button>:null}<Button primary allowReadOnly={allowReadOnly} type="submit" disabled={busy||disabled} icon={busy?Loader2:Check}>{busy?'Saving…':label}</Button></div></form>;}
 export function Pagination({page,total,pageSize,onChange}:{page:number;total:number;pageSize:number;onChange:(p:number)=>void}){return <div className="pagination"><span>{total?`${(page-1)*pageSize+1}–${Math.min(page*pageSize,total)} of ${total}`:'0 results'}</span><div><Button small disabled={page<=1} onClick={()=>onChange(page-1)} icon={ChevronLeft}>Previous</Button><Button small disabled={page*pageSize>=total} onClick={()=>onChange(page+1)}>Next<ChevronRight size={15}/></Button></div></div>;}
 export function SearchBox({value,onChange,placeholder='Search…'}:{value:string;onChange:(v:string)=>void;placeholder?:string}){return <label className="filter-search"><Search size={17}/><input value={value} aria-label={placeholder} placeholder={placeholder} onChange={e=>onChange(e.target.value)}/></label>;}
-export function Tabs({items,value,onChange}:{items:{id:string;label:string;count?:number}[];value:string;onChange:(v:string)=>void}){return <div className="product-tabs" role="tablist">{items.map(i=><button role="tab" aria-selected={value===i.id} className={value===i.id?'selected':''} key={i.id} onClick={()=>onChange(i.id)}>{i.label}{i.count!==undefined?<span>{i.count}</span>:null}</button>)}</div>;}
+export function Tabs({items,value,onChange}:{items:{id:string;label:string;count?:number}[];value:string;onChange:(v:string)=>void}){
+ const selectedIndex=Math.max(0,items.findIndex(item=>item.id===value));
+ return <div className="product-tabs" role="tablist" onKeyDown={event=>{
+  const tabs=Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+  const index=tabs.indexOf(event.target as HTMLButtonElement);
+  if(index<0)return;
+  let next:number;
+  switch(event.key){
+   case 'ArrowRight':next=(index+1)%items.length;break;
+   case 'ArrowLeft':next=(index+items.length-1)%items.length;break;
+   case 'Home':next=0;break;
+   case 'End':next=items.length-1;break;
+   default:return;
+  }
+  event.preventDefault();
+  tabs[next].focus();
+  onChange(items[next].id);
+ }}>{items.map((item,index)=><button type="button" role="tab" tabIndex={index===selectedIndex?0:-1} aria-selected={value===item.id} className={value===item.id?'selected':''} key={item.id} onClick={()=>onChange(item.id)}>{item.label}{item.count!==undefined?<span>{item.count}</span>:null}</button>)}</div>;
+}
 export function Stat({label,value,detail,icon:Icon,href}:{label:string;value:ReactNode;detail?:string;icon:typeof Plus;href?:string}){const Tag=(href?'a':'div') as 'a';return <Tag className="metric" href={href}><div><span>{label}</span><Icon size={17}/></div><strong>{value}</strong>{detail?<small>{detail}</small>:null}</Tag>;}
 export function SectionHeader({title,description,action}:{title:string;description?:string;action?:ReactNode}){return <div className="section-heading"><div><h2>{title}</h2>{description?<p>{description}</p>:null}</div>{action}</div>;}
 export function LinkButton({href,children}:{href:string;children:ReactNode}){return <a className="text-link" href={href}>{children}<ArrowRight size={14}/></a>;}

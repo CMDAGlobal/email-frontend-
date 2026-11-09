@@ -24,11 +24,9 @@ React 19 + TypeScript + Vite admin application. This revision expands the origin
 
 The modern product API is `/api/v1/manage/*`. Admin access supports account sign-in with an HTTP-only cookie, session restoration, CSRF-protected writes and sign-out. A workspace-key tab remains for bootstrap/recovery; that key is held only in sessionStorage, never embedded in the bundle. Transactional integration keys are separate, hashed server-side, and cannot access admin routes.
 
-## Run later
+## Run locally
 
-The latest source was intentionally NOT built, type-checked, tested, or browser-checked at the user's request. Database migrations were not executed. Earlier scaffold validation is historical only.
-
-When ready, apply the backend migrations and run its API and worker. Then:
+The production build and backend-connected contract flows have been validated. Start the MongoDB-backed API and worker, then:
 
 ```sh
 npm ci
@@ -51,9 +49,9 @@ Campaign scheduling accepts a local browser date/time, displays the browser time
 - Editing protection: unsaved campaign leave warnings and a page-level error boundary.
 - Reporting: workspace-timezone daily buckets, engagement recency segment rules and a data-driven delivery gauge.
 
-Apply migration 003 along with any earlier outstanding migrations before using these additions. The latest source still has not been compiled, tested, rendered, or executed. No runtime/visual verification is implied by this feature list.
+The backend initializer creates the required MongoDB indexes and seed documents. See `../VALIDATION.md` for build and runtime evidence.
 
 
 ## CMDA connector addition
 
-See `../CMDA-CONNECTOR.md` for current sync/feedback behavior, consent rules, environment mapping and unexecuted rollout checks. The Dispatch connection UI and backend are wired; source verification and environment setup remain outstanding. Apply all pending migrations through 005 before starting this revision.
+See `../CMDA-CONNECTOR.md` for sync/feedback behavior, consent rules, environment mapping, and production rollout checks. The Dispatch connection UI and backend are wired and locally verified.
